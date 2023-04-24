@@ -210,18 +210,47 @@ void save_svg () {
 			break;
 		fclose(a);	
 	}
+	if(c == 1000)
+		return; 
 	
 	a = fopen(arq, "w");
-		fprintf(a, "<?xml version='1.0' standalone='no'?>\n<svg version='1.1' \nxmlns='http://www.w3.org/2000/svg'\nxmlns:svg='http://www.w3.org/2000/svg'\nxmlns:xlink='http://www.w3.org/1999/xlink'>\n");
+		fprintf(a, "<?xml version='1.0' standalone='no'?>\n<svg version='1.1' width='%d' height='%d' \nxmlns='http://www.w3.org/2000/svg'\nxmlns:svg='http://www.w3.org/2000/svg'\nxmlns:xlink='http://www.w3.org/1999/xlink'>\n\n<path fill='none' stroke='black' \n\td='", screen_width, screen_height);
 		line * l = lines;
 		c = 0;
+		
+		GLfloat stroke_r = 0.0f;
+		GLfloat stroke_g = 0.0f;
+		GLfloat stroke_b = 0.0f;
+		
+		GLint stroke_w = 1;
+		GLint x0 = -1;
+		GLint y0 = -1;
+		
+		
+		
 		while(l != NULL) {
 			//printf("%d %d\t %d %d\n",l->xi,l->yi,l->xf,l->yf);
-			fprintf(a, "<line x1='%d' y1='%d'\t x2='%d' y2='%d' style='stroke-width:%d;stroke:rgb(%d,%d,%d)'/>\n",l->xi,l->yi,l->xf,l->yf,l->stroke,(int)(255 * l->r),(int)(255 * l->g),(int)(255 * l->b));
+			if(stroke_w != l->stroke || stroke_r != l->r || stroke_g != l->g || stroke_b != l->b) {
+				fprintf(a, "' /> \n \n <path stroke='rgb(%d,%d,%d)' stroke-width='%d' id='%d' fill='none'\n\td='", (int)(255 * l->r),(int)(255 * l->g),(int)(255 * l->b), l->stroke, c);
+				stroke_w = l->stroke;
+				stroke_r = l->r;
+				stroke_g = l->g;
+				stroke_b = l->b;
+			}	
+			
+			if(x0 != l->xf || y0 != l->yf)
+				fprintf(a, " M %d %d", l->xf, l->yf);
+			
+			fprintf(a," L %d %d",l->xi,l->yi);
+			
+			x0 = l->xi;
+			y0 = l->yi;
+			
 			l = l->next;
 			c++;
 		}
-		fprintf(a, "</svg>");
+		
+		fprintf(a, "'/>\n\n</svg>");
 	fclose(a);
 	printf("%d lines saved.\n",c);
 }
